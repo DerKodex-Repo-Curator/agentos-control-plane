@@ -9,8 +9,6 @@ browser — a lightweight, open alternative to the hosted dashboard.
 Built with Vite + React + TypeScript + Tailwind. No backend of its own: a thin
 proxy serves the app and forwards `/api` to your AgentOS runtime.
 
-![Studio — visual canvas for teams and workflows](docs/studio.png)
-
 ## Features
 
 - **Home** — agents, teams, workflows and interfaces as cards; open a chat or a
@@ -60,7 +58,7 @@ Plus a **multi-server switcher**, a **⌘K command palette**, and an optional
 | | |
 | --- | --- |
 | **Home** — agents, teams & workflows<br>![Home](docs/home.png) | **Chat** — stream a run<br>![Chat](docs/chat.png) |
-| **Studio** — build & publish components<br>![Studio](docs/studio-agents.png) | **Traces** — filterable, shareable<br>![Traces](docs/traces.png) |
+| **Studio** — drag-drop canvas & publish<br>![Studio](docs/studio.png) | **Traces** — filterable, shareable<br>![Traces](docs/traces.png) |
 | **Metrics** — usage charts<br>![Metrics](docs/metrics.png) | **Settings** — JWT auth, servers, interfaces<br>![Settings](docs/settings-auth.png) |
 
 ## How it talks to AgentOS
