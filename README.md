@@ -22,8 +22,9 @@ proxy serves the app and forwards `/api` to your AgentOS runtime.
   attachments/media, token metrics, metadata) at its own shareable URL; select
   rows to bulk-delete.
 - **Traces** — spans as a tree or a time-axis timeline (agent / team / model /
-  tool), with per-span input, output and metadata, a server-side filter builder
-  (status, ids, …), and a shareable URL per trace.
+  tool), with per-span input, output and metadata, and a shareable URL per
+  trace. A server-side filter builder (status, ids, …) plus the tab and search
+  live in the query string, so a filtered view is a shareable link too.
 - **Studio** — build, version and publish agents, teams and workflows at runtime
   with a guided form (model, instructions, tools, members, mode, history) or raw
   config JSON; teams and workflows get a visual canvas (React Flow) — members and

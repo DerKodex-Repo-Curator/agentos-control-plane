@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Plus, SlidersHorizontal, X } from 'lucide-react'
 import { api } from '@/lib/api'
 import { usePaginatedList } from '@/lib/usePaginatedList'
@@ -36,15 +36,31 @@ function buildTraceFilter(conds: Condition[]): unknown | null {
   return nodes.length === 1 ? nodes[0] : { op: 'AND', conditions: nodes }
 }
 
+// Reverse of buildTraceFilter: turn an applied filter DSL back into editable rows
+// so a shared URL pre-populates the builder.
+function filterToConds(filter: unknown): Condition[] {
+  const f = filter as Record<string, unknown> | null
+  if (!f || typeof f !== 'object') return [{ key: '', op: '', value: '' }]
+  const nodes = (f.op === 'AND' ? (f.conditions as Record<string, unknown>[]) : [f]) ?? []
+  const conds = nodes.map((n) => ({
+    key: String(n.key ?? ''),
+    op: String(n.op ?? ''),
+    value: n.op === 'IN' ? ((n.values as string[]) ?? []).join(', ') : String(n.value ?? '')
+  }))
+  return conds.length ? conds : [{ key: '', op: '', value: '' }]
+}
+
 function FilterBar({
   schema,
+  initial,
   onApply
 }: {
   schema?: TraceFilterSchema
+  initial: unknown | null
   onApply: (filter: unknown | null) => void
 }) {
   const fields = schema?.fields ?? []
-  const [conds, setConds] = useState<Condition[]>([{ key: '', op: '', value: '' }])
+  const [conds, setConds] = useState<Condition[]>(() => filterToConds(initial))
 
   const setCond = (i: number, patch: Partial<Condition>) =>
     setConds((cs) => cs.map((c, j) => (j === i ? { ...c, ...patch } : c)))
@@ -146,13 +162,42 @@ function FilterBar({
 
 export function Traces() {
   const { config } = useOS()
-  const [tab, setTab] = useState<'sessions' | 'runs'>('runs')
-  const [query, setQuery] = useState('')
-  const [range, setRange] = useState<TimeRangeKey>('all')
-  const [sessionId, setSessionId] = useState<string | null>(null)
   const navigate = useNavigate()
-  const [advanced, setAdvanced] = useState(false)
-  const [filter, setFilter] = useState<unknown | null>(null)
+  const [params, setParams] = useSearchParams()
+
+  const tab = (params.get('tab') as 'sessions' | 'runs') || 'runs'
+  const query = params.get('q') ?? ''
+  const range = (params.get('range') as TimeRangeKey) || 'all'
+  const sessionId = params.get('session')
+  const filterStr = params.get('filter')
+  const filter = useMemo(() => {
+    if (!filterStr) return null
+    try {
+      return JSON.parse(filterStr)
+    } catch {
+      return null
+    }
+  }, [filterStr])
+  const [advanced, setAdvanced] = useState(!!filterStr)
+
+  const patch = (updates: Record<string, string | null>) =>
+    setParams(
+      (prev) => {
+        const n = new URLSearchParams(prev)
+        for (const [k, v] of Object.entries(updates)) {
+          if (v == null || v === '') n.delete(k)
+          else n.set(k, v)
+        }
+        return n
+      },
+      { replace: true }
+    )
+
+  const setTab = (t: 'sessions' | 'runs') => patch({ tab: t === 'runs' ? null : t })
+  const setQuery = (v: string) => patch({ q: v })
+  const setRange = (r: TimeRangeKey) => patch({ range: r === 'all' ? null : r })
+  const setSessionId = (s: string | null) => patch({ session: s })
+  const applyFilter = (f: unknown | null) => patch({ filter: f ? JSON.stringify(f) : null })
 
   const filterSchema = useApi<TraceFilterSchema>(
     (s) => api.traceFilterSchema(s),
@@ -261,7 +306,12 @@ export function Traces() {
       </div>
 
       {tab === 'runs' && advanced && (
-        <FilterBar schema={filterSchema.data ?? undefined} onApply={setFilter} />
+        <FilterBar
+          key={filterStr ?? 'none'}
+          schema={filterSchema.data ?? undefined}
+          initial={filter}
+          onApply={applyFilter}
+        />
       )}
 
       <div className="px-8 py-2">
@@ -375,10 +425,7 @@ export function Traces() {
               error={sessions.error}
               empty="No sessions yet."
               getKey={(r) => r.session_id}
-              onRowClick={(r) => {
-                setSessionId(r.session_id)
-                setTab('runs')
-              }}
+              onRowClick={(r) => patch({ session: r.session_id, tab: null })}
             />
             <Pager
               page={sessions.page}
