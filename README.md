@@ -53,6 +53,16 @@ proxy serves the app and forwards `/api` to your AgentOS runtime.
 Plus a **multi-server switcher**, a **⌘K command palette**, and an optional
 **login gate**.
 
+## Screenshots
+
+> Captured against a live AgentOS; component names and content are anonymized.
+
+| | |
+| --- | --- |
+| **Home** — agents, teams & workflows<br>![Home](docs/home.png) | **Chat** — stream a run<br>![Chat](docs/chat.png) |
+| **Studio** — build & publish components<br>![Studio](docs/studio-agents.png) | **Traces** — filterable, shareable<br>![Traces](docs/traces.png) |
+| **Metrics** — usage charts<br>![Metrics](docs/metrics.png) | **Settings** — JWT auth, servers, interfaces<br>![Settings](docs/settings-auth.png) |
+
 ## How it talks to AgentOS
 
 The browser calls a same-origin `/api/*`. A thin proxy (the Vite dev server in
