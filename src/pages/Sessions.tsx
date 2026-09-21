@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Bot, Loader2, Trash2, User as UserIcon, Users } from 'lucide-react'
 import { api } from '@/lib/api'
 import { usePaginatedList } from '@/lib/usePaginatedList'
@@ -215,7 +215,22 @@ export function Sessions() {
   const { config } = useOS()
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const [type, setType] = useState('')
+  const [params, setParams] = useSearchParams()
+  const type = params.get('type') ?? ''
+  const search = params.toString()
+  const setType = (v: string) =>
+    setParams(
+      (prev) => {
+        const n = new URLSearchParams(prev)
+        if (v) n.set('type', v)
+        else n.delete('type')
+        return n
+      },
+      { replace: true }
+    )
+  const openSession = (id: string) =>
+    navigate({ pathname: `/sessions/${id}`, search })
+  const closeSession = () => navigate({ pathname: '/sessions', search })
   const [sel, setSel] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
   const { rows, meta, loading, error, page, setPage, reload } = usePaginatedList<Session>(
@@ -353,7 +368,7 @@ export function Sessions() {
           error={error}
           empty="No sessions yet."
           getKey={(r) => r.session_id}
-          onRowClick={(r) => navigate(`/sessions/${r.session_id}`)}
+          onRowClick={(r) => openSession(r.session_id)}
           selection={{ selected: sel, onToggle: toggle, onToggleAll: toggleAll }}
         />
         <Pager page={page} totalPages={meta?.total_pages ?? 1} onPage={setPage} />
@@ -366,7 +381,7 @@ export function Sessions() {
             {selected?.session_name || selected?.session_id}
           </span>
         }
-        onClose={() => navigate('/sessions')}
+        onClose={closeSession}
       >
         {selected && <SessionDetail session={selected} />}
       </Drawer>

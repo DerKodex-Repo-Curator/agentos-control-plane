@@ -19,8 +19,8 @@ proxy serves the app and forwards `/api` to your AgentOS runtime.
   replies, live tool calls (arguments + result), reasoning, workflow steps, and
   resume / rename / delete of past sessions.
 - **Sessions** — every session with a tabbed detail (conversation with inline
-  attachments/media, token metrics, metadata) at its own shareable URL; select
-  rows to bulk-delete.
+  attachments/media, token metrics, metadata) at its own shareable URL; the type
+  filter lives in the query string; select rows to bulk-delete.
 - **Traces** — spans as a tree or a time-axis timeline (agent / team / model /
   tool), with per-span input, output and metadata, and a shareable URL per
   trace. A server-side filter builder (status, ids, …) plus the tab and search
