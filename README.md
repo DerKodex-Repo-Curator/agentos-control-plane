@@ -33,7 +33,8 @@ proxy serves the app and forwards `/api` to your AgentOS runtime.
   component opens at its own shareable URL. Your code-defined components show
   read-only alongside the Studio-authored ones.
 - **Learning** — user memories, profiles, entity memories, session context and
-  decision logs; edit or delete entries.
+  decision logs; filter by user and edit or delete entries. Module and user
+  filter live in the URL.
 - **Memory** — stored memories with search; create, edit, optimize, and single
   or bulk delete.
 - **Knowledge** — documents per knowledge base; add content (text / URL / file),
@@ -41,7 +42,7 @@ proxy serves the app and forwards `/api` to your AgentOS runtime.
 - **Metrics** — per-metric charts (tokens, users, runs, sessions, model mix), a
   month picker and a recalculate action with live refresh status.
 - **Evaluations** — launch accuracy / reliability / judge / performance runs and
-  review the tool-call / judge breakdown; delete runs.
+  review the tool-call / judge breakdown; delete runs; type filter in the URL.
 - **Approvals** — tool calls waiting for a human; approve or reject.
 - **Scheduler** — create and edit cron schedules; run history; enable, disable,
   trigger.

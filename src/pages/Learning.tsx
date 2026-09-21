@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Check, Loader2, Pencil, X } from 'lucide-react'
 import { api } from '@/lib/api'
 import { usePaginatedList } from '@/lib/usePaginatedList'
+import { useApi } from '@/lib/useApi'
 import { useOS } from '@/lib/osContext'
 import { formatDateTime } from '@/lib/format'
 import type { Learning as LearningRow } from '@/lib/types'
@@ -57,24 +58,55 @@ export function Learning() {
   const { module = 'user-memories' } = useParams()
   const mod = MODULES[module] ?? MODULES['user-memories']
   const { config } = useOS()
+  const [params, setParams] = useSearchParams()
+  const user = params.get('user') ?? ''
+  const setUser = (v: string) =>
+    setParams(
+      (prev) => {
+        const n = new URLSearchParams(prev)
+        if (v) n.set('user', v)
+        else n.delete('user')
+        return n
+      },
+      { replace: true }
+    )
   const [selected, setSelected] = useState<LearningRow | null>(null)
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState('')
   const [saving, setSaving] = useState(false)
 
+  const users = useApi(
+    (s) => api.learningUsers({ learning_type: mod.type, limit: 100 }, s),
+    [mod.type]
+  )
+
   const { rows, meta, loading, error, page, setPage, reload } =
     usePaginatedList<LearningRow>(
       (params, s) => api.learnings(params, s),
-      { limit: 25, params: { learning_type: mod.type } }
+      { limit: 25, params: { learning_type: mod.type, ...(user ? { user_id: user } : {}) } }
     )
 
   const mem = selected ? firstMemory(selected) : undefined
 
   // learning/:module keeps this component mounted, so close any open drawer/edit
-  // when the module tab changes.
+  // when the module tab changes. Clear the user filter only on a real change (not
+  // on first mount) so a shared /learning/:module?user=… link keeps its filter.
+  const prevModule = useRef(module)
   useEffect(() => {
     setSelected(null)
     setEditing(false)
+    if (prevModule.current !== module) {
+      prevModule.current = module
+      setParams(
+        (prev) => {
+          const n = new URLSearchParams(prev)
+          n.delete('user')
+          return n
+        },
+        { replace: true }
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [module])
 
   const startEdit = () => {
@@ -103,7 +135,25 @@ export function Learning() {
 
   return (
     <div>
-      <PageHeader title={mod.title}>
+      <PageHeader
+        title={mod.title}
+        actions={
+          (users.data?.data?.length ?? 0) > 0 && (
+            <select
+              value={user}
+              onChange={(e) => setUser(e.target.value)}
+              className="rounded-md border border-border bg-panel px-3 py-1.5 text-[12px] text-muted outline-none hover:bg-hover"
+            >
+              <option value="">All users</option>
+              {users.data?.data.map((u) => (
+                <option key={u.user_id} value={u.user_id}>
+                  {u.user_id}
+                </option>
+              ))}
+            </select>
+          )
+        }
+      >
         <DbTableHeader
           items={[
             { label: 'Database', value: config?.os_database },

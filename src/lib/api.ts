@@ -190,6 +190,12 @@ export const api = {
   learnings: (q: Q, s?: AbortSignal) =>
     apiGet<Paginated<Learning>>('/learnings', q, s),
   deleteLearning: (id: string) => apiJson(`/learnings/${id}`, 'DELETE'),
+  learningUsers: (q: Q, s?: AbortSignal) =>
+    apiGet<Paginated<{ user_id: string; last_learning_updated_at?: number }>>(
+      '/learnings/users',
+      q,
+      s
+    ),
   updateLearning: (
     id: string,
     body: { content?: Record<string, unknown>; metadata?: Record<string, unknown> }

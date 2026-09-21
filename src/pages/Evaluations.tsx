@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Loader2, Plus } from 'lucide-react'
 import { api } from '@/lib/api'
 import { usePaginatedList } from '@/lib/usePaginatedList'
@@ -329,7 +330,18 @@ function fmtScore(v: unknown): string {
 
 export function Evaluations() {
   const { config } = useOS()
-  const [type, setType] = useState('')
+  const [params, setParams] = useSearchParams()
+  const type = params.get('type') ?? ''
+  const setType = (v: string) =>
+    setParams(
+      (prev) => {
+        const n = new URLSearchParams(prev)
+        if (v) n.set('type', v)
+        else n.delete('type')
+        return n
+      },
+      { replace: true }
+    )
   const [selected, setSelected] = useState<EvalRun | null>(null)
   const [creating, setCreating] = useState(false)
   const { rows, meta, loading, error, page, setPage, reload } = usePaginatedList<EvalRun>(
